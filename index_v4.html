@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>你紀錄下的林森北條通之路</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #14171c;
+    --ink-soft: #1d2129;
+    --paper: #f1ead9;
+    --paper-dim: #c9c0ac;
+    --lantern: #e2a33d;
+    --signage-red: #b84c3e;
+    --mist: #7c8b94;
+    --line: rgba(241, 234, 217, 0.14);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: "Noto Sans TC", sans-serif;
+  }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-image:
+      radial-gradient(ellipse 70% 50% at 50% -10%, rgba(226, 163, 61, 0.10), transparent 60%);
+  }
+
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 56px 24px 72px;
+    width: 100%;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--mist);
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    margin-bottom: 14px;
+  }
+
+  .eyebrow::before,
+  .eyebrow::after {
+    content: "";
+    width: 20px;
+    height: 1px;
+    background: var(--line);
+  }
+
+  h1 {
+    font-family: "Noto Serif TC", serif;
+    font-weight: 700;
+    font-size: clamp(28px, 5vw, 42px);
+    line-height: 1.35;
+    margin: 0 0 14px;
+    color: var(--paper);
+  }
+
+  .lede {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--paper-dim);
+    max-width: 46ch;
+    margin: 0 auto;
+  }
+
+  /* ---- 狀態畫面 ---- */
+  .state {
+    text-align: center;
+    padding: 90px 24px;
+    color: var(--mist);
+    font-size: 14px;
+    line-height: 1.9;
+  }
+  .state strong {
+    display: block;
+    font-family: "Noto Serif TC", serif;
+    font-size: 19px;
+    color: var(--paper);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  /* ---- 輪播主體 ---- */
+  .stage {
+    position: relative;
+  }
+
+  .frame {
+    position: relative;
+    border-radius: 2px;
+    overflow: hidden;
+    background: var(--ink-soft);
+    border: 1px solid var(--line);
+    box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6);
+  }
+
+  .frame-photo {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+  }
+
+  .frame-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  .frame-photo img.show { opacity: 1; }
+
+  /* ---- 彈幕橫幅(獨立於照片上方) ---- */
+  .danmaku-band {
+    position: relative;
+    height: 126px;
+    overflow: hidden;
+    border-radius: 2px;
+    background: var(--ink-soft);
+    border: 1px solid var(--line);
+    margin-bottom: 10px;
+  }
+
+  .danmaku-item {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    white-space: pre;
+    font-family: "Noto Serif TC", serif;
+    font-size: clamp(12px, 2.6vw, 14px);
+    color: var(--paper);
+    opacity: 0.92;
+    will-change: transform;
+  }
+
+  /* ---- 控制列 ---- */
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 18px;
+  }
+
+  .nav-btn {
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--paper);
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .nav-btn:hover { border-color: var(--lantern); background: rgba(226, 163, 61, 0.08); }
+  .nav-btn:focus-visible { outline: 2px solid var(--lantern); outline-offset: 2px; }
+
+  .dots {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 60%;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--line);
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+  .dot.active {
+    background: var(--lantern);
+    transform: scale(1.5);
+  }
+
+  .counter {
+    font-size: 12px;
+    color: var(--mist);
+    font-variant-numeric: tabular-nums;
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 46px;
+    font-size: 12px;
+    color: var(--mist);
+    line-height: 1.8;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .frame-photo img { transition: none; }
+    .danmaku-band { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">島內散步・共同紀錄</span>
+    <h1>你紀錄下的<br class="mobile-break">林森北條通之路</h1>
+    <p class="lede">每一張照片,都是有人在條通的巷弄裡,停下腳步的那一刻。</p>
+  </header>
+
+  <div class="stage" id="stage">
+    <div class="state" id="state">
+      <strong>正在整理巷弄裡的照片</strong>
+      稍等片刻
+    </div>
+  </div>
+
+  <footer id="footer" style="display:none;">
+    每隔一段時間,這裡會自動出現新的投稿。
+  </footer>
+</div>
+
+<script>
+  const DATA_URL = "data/latest.json";
+  const REFRESH_INTERVAL_MS = 60 * 1000;
+  const AUTO_ADVANCE_MS = 5500;
+
+  const stageEl = document.getElementById("stage");
+  const footerEl = document.getElementById("footer");
+
+  let slides = [];
+  let current = 0;
+  let autoTimer = null;
+  let lastSignature = "";
+
+  let danmakuPool = [];
+  let danmakuTimers = [];
+  const DANMAKU_LANE_COUNT = 3;
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  async function fetchData() {
+    try {
+      const res = await fetch(DATA_URL + "?t=" + Date.now());
+      if (!res.ok) throw new Error("讀取失敗: " + res.status);
+      const entries = await res.json();
+      const nextSlides = flattenToSlides(entries);
+      const signature = JSON.stringify(nextSlides.map(s => s.src));
+
+      if (signature !== lastSignature) {
+        lastSignature = signature;
+        slides = nextSlides;
+        danmakuPool = buildCaptionPool(entries);
+        current = 0;
+        render();
+      }
+    } catch (err) {
+      console.error(err);
+      if (slides.length === 0) {
+        renderState("暫時無法讀取投稿", "請稍後重新整理頁面");
+      }
+    }
+  }
+
+  function buildCaptionPool(entries) {
+    if (!Array.isArray(entries)) return [];
+    const seen = new Set();
+    const pool = [];
+    entries.forEach(entry => {
+      // 優先使用表單第2、3題(danmakuTexts);若是舊資料沒有這個欄位,退回用說明文字,避免舊投稿完全抓不到彈幕
+      const source = Array.isArray(entry.danmakuTexts) && entry.danmakuTexts.length
+        ? entry.danmakuTexts
+        : [entry.caption];
+
+      source.forEach(raw => {
+        const text = (raw || "").trim();
+        if (text && !seen.has(text)) {
+          seen.add(text);
+          pool.push(text);
+        }
+      });
+    });
+    return pool;
+  }
+
+  function flattenToSlides(entries) {
+    if (!Array.isArray(entries)) return [];
+    const out = [];
+    entries.forEach(entry => {
+      const images = Array.isArray(entry.images) ? entry.images : [];
+      images.forEach(src => {
+        out.push({ src, caption: entry.caption || "", submittedAt: entry.submittedAt });
+      });
+    });
+    return out;
+  }
+
+  function renderState(title, sub) {
+    stopDanmakuLoop();
+    stageEl.innerHTML = `
+      <div class="state">
+        <strong>${escapeHtml(title)}</strong>
+        ${escapeHtml(sub)}
+      </div>
+    `;
+    footerEl.style.display = "none";
+  }
+
+  function render() {
+    stopAuto();
+    stopDanmakuLoop();
+
+    if (slides.length === 0) {
+      renderState("這裡還沒有任何足跡", "留下你眼中林森北條通的樣子,就會出現在這裡");
+      return;
+    }
+
+    stageEl.innerHTML = `
+      <div class="danmaku-band" id="danmakuBand" aria-hidden="true"></div>
+      <div class="frame">
+        <div class="frame-photo" id="photoBox"></div>
+      </div>
+      <div class="controls">
+        <button class="nav-btn" id="prevBtn" aria-label="上一張">‹</button>
+        <div class="dots" id="dots"></div>
+        <button class="nav-btn" id="nextBtn" aria-label="下一張">›</button>
+      </div>
+      <div style="text-align:center; margin-top:10px;">
+        <span class="counter" id="counter"></span>
+      </div>
+    `;
+
+    document.getElementById("prevBtn").addEventListener("click", () => go(current - 1));
+    document.getElementById("nextBtn").addEventListener("click", () => go(current + 1));
+
+    buildDots();
+    show(current);
+    startAuto();
+    startDanmakuLoop();
+
+    footerEl.style.display = "block";
+  }
+
+  function buildDots() {
+    const dotsEl = document.getElementById("dots");
+    dotsEl.innerHTML = slides
+      .map((_, i) => `<button class="dot" data-i="${i}" aria-label="第 ${i + 1} 張"></button>`)
+      .join("");
+    dotsEl.querySelectorAll(".dot").forEach(btn => {
+      btn.addEventListener("click", () => go(parseInt(btn.dataset.i, 10)));
+    });
+  }
+
+  function show(index) {
+    const slide = slides[index];
+    const photoBox = document.getElementById("photoBox");
+    const img = document.createElement("img");
+    img.src = slide.src;
+    img.alt = slide.caption || "投稿照片";
+    img.onload = () => img.classList.add("show");
+    photoBox.innerHTML = "";
+    photoBox.appendChild(img);
+
+    document.getElementById("counter").textContent = `${index + 1} / ${slides.length}`;
+
+    document.querySelectorAll(".dot").forEach((d, i) => d.classList.toggle("active", i === index));
+  }
+
+  function go(index) {
+    current = ((index % slides.length) + slides.length) % slides.length;
+    show(current);
+    restartAuto();
+  }
+
+  function startAuto() {
+    if (slides.length <= 1) return;
+    autoTimer = setInterval(() => go(current + 1), AUTO_ADVANCE_MS);
+  }
+  function stopAuto() {
+    if (autoTimer) clearInterval(autoTimer);
+    autoTimer = null;
+  }
+  function restartAuto() {
+    stopAuto();
+    startAuto();
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  /* ---- 彈幕 ---- */
+  function startDanmakuLoop() {
+    stopDanmakuLoop();
+    if (prefersReducedMotion || danmakuPool.length === 0) return;
+    for (let lane = 0; lane < DANMAKU_LANE_COUNT; lane++) {
+      scheduleNextDanmaku(lane, lane * 900); // 三行稍微錯開起跑,避免一開始同時出現
+    }
+  }
+
+  function stopDanmakuLoop() {
+    danmakuTimers.forEach(id => clearTimeout(id));
+    danmakuTimers = [];
+  }
+
+  function scheduleNextDanmaku(lane, initialDelay) {
+    const delay = initialDelay !== undefined ? initialDelay : 2200 + Math.random() * 2600;
+    danmakuTimers[lane] = setTimeout(() => {
+      spawnDanmaku(lane);
+      scheduleNextDanmaku(lane);
+    }, delay);
+  }
+
+  // 從文字池挑 2~3 句,中間用十個空格隔開,組成一整行彈幕內容
+  function buildDanmakuLine() {
+    const count = Math.min(danmakuPool.length, 2 + Math.floor(Math.random() * 2));
+    const used = new Set();
+    const picks = [];
+    while (picks.length < count && used.size < danmakuPool.length) {
+      const idx = Math.floor(Math.random() * danmakuPool.length);
+      if (!used.has(idx)) {
+        used.add(idx);
+        picks.push(danmakuPool[idx]);
+      }
+    }
+    return picks.join(" ".repeat(10));
+  }
+
+  function spawnDanmaku(lane) {
+    const band = document.getElementById("danmakuBand");
+    if (!band || danmakuPool.length === 0) return;
+
+    const item = document.createElement("span");
+    item.className = "danmaku-item";
+    item.textContent = buildDanmakuLine();
+    item.style.top = (lane * (100 / DANMAKU_LANE_COUNT)) + "%";
+    item.style.height = (100 / DANMAKU_LANE_COUNT) + "%";
+
+    band.appendChild(item);
+
+    const containerWidth = band.clientWidth;
+    const itemWidth = item.offsetWidth;
+    const distance = containerWidth + itemWidth;
+    const duration = 10 + Math.random() * 6; // 一行字變多了,飄行時間拉長到 10~16 秒
+
+    item.style.left = containerWidth + "px";
+
+    requestAnimationFrame(() => {
+      item.style.transition = `transform ${duration}s linear`;
+      item.style.transform = `translateX(-${distance}px)`;
+    });
+
+    setTimeout(() => item.remove(), duration * 1000 + 300);
+  }
+
+  fetchData();
+  setInterval(fetchData, REFRESH_INTERVAL_MS);
+</script>
+
+</body>
+</html>
