@@ -118,7 +118,7 @@
   .frame-photo {
     position: relative;
     width: 100%;
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 16 / 9;
     overflow: hidden;
   }
 
@@ -132,35 +132,27 @@
   }
   .frame-photo img.show { opacity: 1; }
 
-  .frame-photo::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, transparent 55%, rgba(20, 23, 28, 0.85) 100%);
-    pointer-events: none;
+  /* ---- 彈幕橫幅(獨立於照片上方) ---- */
+  .danmaku-band {
+    position: relative;
+    height: 126px;
+    overflow: hidden;
+    border-radius: 2px;
+    background: var(--ink-soft);
+    border: 1px solid var(--line);
+    margin-bottom: 10px;
   }
 
-  .frame-caption {
+  .danmaku-item {
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 22px 22px 20px;
-    z-index: 2;
-  }
-
-  .frame-caption p {
-    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    white-space: pre;
     font-family: "Noto Serif TC", serif;
-    font-size: 17px;
-    line-height: 1.7;
+    font-size: clamp(12px, 2.6vw, 14px);
     color: var(--paper);
-  }
-
-  .frame-meta {
-    margin-top: 8px;
-    font-size: 12px;
-    color: var(--paper-dim);
+    opacity: 0.92;
+    will-change: transform;
   }
 
   /* ---- 控制列 ---- */
@@ -228,6 +220,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .frame-photo img { transition: none; }
+    .danmaku-band { display: none; }
   }
 </style>
 </head>
@@ -265,6 +258,11 @@
   let autoTimer = null;
   let lastSignature = "";
 
+  let danmakuPool = [];
+  let danmakuTimers = [];
+  const DANMAKU_LANE_COUNT = 3;
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
   async function fetchData() {
     try {
       const res = await fetch(DATA_URL + "?t=" + Date.now());
@@ -276,6 +274,7 @@
       if (signature !== lastSignature) {
         lastSignature = signature;
         slides = nextSlides;
+        danmakuPool = buildCaptionPool(entries);
         current = 0;
         render();
       }
@@ -285,6 +284,27 @@
         renderState("暫時無法讀取投稿", "請稍後重新整理頁面");
       }
     }
+  }
+
+  function buildCaptionPool(entries) {
+    if (!Array.isArray(entries)) return [];
+    const seen = new Set();
+    const pool = [];
+    entries.forEach(entry => {
+      // 優先使用表單第2、3題(danmakuTexts);若是舊資料沒有這個欄位,退回用說明文字,避免舊投稿完全抓不到彈幕
+      const source = Array.isArray(entry.danmakuTexts) && entry.danmakuTexts.length
+        ? entry.danmakuTexts
+        : [entry.caption];
+
+      source.forEach(raw => {
+        const text = (raw || "").trim();
+        if (text && !seen.has(text)) {
+          seen.add(text);
+          pool.push(text);
+        }
+      });
+    });
+    return pool;
   }
 
   function flattenToSlides(entries) {
@@ -300,6 +320,7 @@
   }
 
   function renderState(title, sub) {
+    stopDanmakuLoop();
     stageEl.innerHTML = `
       <div class="state">
         <strong>${escapeHtml(title)}</strong>
@@ -311,6 +332,7 @@
 
   function render() {
     stopAuto();
+    stopDanmakuLoop();
 
     if (slides.length === 0) {
       renderState("這裡還沒有任何足跡", "留下你眼中林森北條通的樣子,就會出現在這裡");
@@ -318,12 +340,9 @@
     }
 
     stageEl.innerHTML = `
+      <div class="danmaku-band" id="danmakuBand" aria-hidden="true"></div>
       <div class="frame">
         <div class="frame-photo" id="photoBox"></div>
-        <div class="frame-caption">
-          <p id="captionText"></p>
-          <div class="frame-meta" id="metaText"></div>
-        </div>
       </div>
       <div class="controls">
         <button class="nav-btn" id="prevBtn" aria-label="上一張">‹</button>
@@ -341,6 +360,7 @@
     buildDots();
     show(current);
     startAuto();
+    startDanmakuLoop();
 
     footerEl.style.display = "block";
   }
@@ -365,20 +385,9 @@
     photoBox.innerHTML = "";
     photoBox.appendChild(img);
 
-    document.getElementById("captionText").textContent = slide.caption || "（沒有留下文字說明）";
-    document.getElementById("metaText").textContent = formatMeta(slide.submittedAt);
     document.getElementById("counter").textContent = `${index + 1} / ${slides.length}`;
 
     document.querySelectorAll(".dot").forEach((d, i) => d.classList.toggle("active", i === index));
-  }
-
-  function formatMeta(iso) {
-    if (!iso) return "";
-    try {
-      return new Date(iso).toLocaleDateString("zh-TW", { year: "numeric", month: "long", day: "numeric" });
-    } catch {
-      return "";
-    }
   }
 
   function go(index) {
@@ -404,6 +413,65 @@
     const div = document.createElement("div");
     div.textContent = str;
     return div.innerHTML;
+  }
+
+  /* ---- 彈幕 ---- */
+  function startDanmakuLoop() {
+    stopDanmakuLoop();
+    if (prefersReducedMotion || danmakuPool.length === 0) return;
+    for (let lane = 0; lane < DANMAKU_LANE_COUNT; lane++) {
+      danmakuTimers[lane] = setTimeout(() => spawnDanmaku(lane), lane * 600);
+    }
+  }
+
+  function stopDanmakuLoop() {
+    danmakuTimers.forEach(id => clearTimeout(id));
+    danmakuTimers = [];
+  }
+
+  // 從文字池挑 2~3 句,中間用十個空格隔開,組成一整行彈幕內容
+  function buildDanmakuLine() {
+    const count = Math.min(danmakuPool.length, 2 + Math.floor(Math.random() * 2));
+    const used = new Set();
+    const picks = [];
+    while (picks.length < count && used.size < danmakuPool.length) {
+      const idx = Math.floor(Math.random() * danmakuPool.length);
+      if (!used.has(idx)) {
+        used.add(idx);
+        picks.push(danmakuPool[idx]);
+      }
+    }
+    return picks.join(" ".repeat(10));
+  }
+
+  function spawnDanmaku(lane) {
+    const band = document.getElementById("danmakuBand");
+    if (!band || danmakuPool.length === 0) return;
+
+    const item = document.createElement("span");
+    item.className = "danmaku-item";
+    item.textContent = buildDanmakuLine();
+    item.style.top = (lane * (100 / DANMAKU_LANE_COUNT)) + "%";
+    item.style.height = (100 / DANMAKU_LANE_COUNT) + "%";
+
+    band.appendChild(item);
+
+    const containerWidth = band.clientWidth;
+    const itemWidth = item.offsetWidth;
+    const distance = containerWidth + itemWidth;
+    const duration = 10 + Math.random() * 6; // 一行字變多了,飄行時間拉長到 10~16 秒
+
+    item.style.left = containerWidth + "px";
+
+    requestAnimationFrame(() => {
+      item.style.transition = `transform ${duration}s linear`;
+      item.style.transform = `translateX(-${distance}px)`;
+    });
+
+    setTimeout(() => item.remove(), duration * 1000 + 300);
+
+    // 這一軌的下一句,等這句飄到快結束(90%)才出現,確保同軌不會同時疊字
+    danmakuTimers[lane] = setTimeout(() => spawnDanmaku(lane), duration * 1000 * 0.9);
   }
 
   fetchData();
