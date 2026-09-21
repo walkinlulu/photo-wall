@@ -4464,32 +4464,45 @@ a.btn{ text-decoration:none; }
   var resizeT;
   window.addEventListener('resize', function(){ clearTimeout(resizeT); resizeT = setTimeout(function(){ layout(); startDanmaku(); }, 400); });
 
-  // ---------- 膠卷自動往下滑 ----------
-  // 每隔幾秒往下移一格；滑到最後一格後停一下再回到開頭。
-  // 使用者自己捲動、拖曳、點按鈕或放大照片時會暫停，停手幾秒後再繼續。
-  var AUTO_STEP_MS = 4500, RESUME_AFTER_MS = 6000;
-  var autoPausedUntil = 0, atEndSince = 0;
-  function pauseAuto(){ autoPausedUntil = Date.now() + RESUME_AFTER_MS; }
+  // ---------- 膠卷自動往下滑（連續平穩捲動） ----------
+  // 以固定速度一路往下滑；滑到最後一格停一下，再平順回到開頭重新開始。
+  // 使用者自己捲動、拖曳、點箭頭或放大照片時會暫停，停手幾秒後從目前位置繼續。
+  var SECONDS_PER_FRAME = 9;          // 大約幾秒滑過一張照片的高度，數字越大越慢
+  var RESUME_AFTER_MS = 6000, END_PAUSE_MS = 3000;
+  var autoPausedUntil = 0, autoPos = 0, autoLast = 0, endReachedAt = 0, returning = false;
+  function pauseAuto(){ autoPausedUntil = Date.now() + RESUME_AFTER_MS; returning = false; endReachedAt = 0; }
   ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function(ev){
     rail.addEventListener(ev, pauseAuto, { passive: true });
   });
   document.querySelector('.nav.up').addEventListener('click', pauseAuto);
   document.querySelector('.nav.down').addEventListener('click', pauseAuto);
-  function autoStep(){
-    if(reduceMotion || document.hidden || lb.classList.contains('on') || Date.now() < autoPausedUntil) return;
-    if(!photos.length) return;
-    var atEnd = rail.scrollTop + rail.clientHeight >= rail.scrollHeight - 4 ||
-                rail.scrollTop >= frameHeight() * photos.length - 4;   // 已經到最後一格（空白投稿格）
-    if(atEnd){
-      if(!atEndSince){ atEndSince = Date.now(); return; }
-      if(Date.now() - atEndSince < AUTO_STEP_MS) return;             // 在最後多停一拍
-      atEndSince = 0;
-      rail.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
+  rail.style.scrollSnapType = 'none';   // 連續捲動時不做逐格吸附
+
+  function autoTick(t){
+    var dt = autoLast ? Math.min((t - autoLast) / 1000, 0.05) : 0;
+    autoLast = t;
+    var busy = reduceMotion || document.hidden || lb.classList.contains('on') ||
+               Date.now() < autoPausedUntil || !photos.length;
+    if(busy){
+      autoPos = rail.scrollTop;                                   // 暫停期間跟著使用者的位置
+    } else if(returning){
+      if(rail.scrollTop <= 1){ returning = false; autoPos = 0; }  // 已回到開頭
+    } else {
+      var maxTop = rail.scrollHeight - rail.clientHeight;
+      if(autoPos >= maxTop - 1){
+        if(!endReachedAt) endReachedAt = Date.now();
+        if(Date.now() - endReachedAt >= END_PAUSE_MS){
+          endReachedAt = 0; returning = true;
+          rail.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      } else {
+        autoPos = Math.min(maxTop, autoPos + frameHeight() / SECONDS_PER_FRAME * dt);
+        rail.scrollTop = autoPos;
+      }
     }
-    rail.scrollBy({ top: frameHeight(), behavior: 'smooth' });
+    requestAnimationFrame(autoTick);
   }
-  setInterval(autoStep, AUTO_STEP_MS);
+  requestAnimationFrame(autoTick);
 
   // ---------- 啟動 ----------
   render();
