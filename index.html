@@ -4468,7 +4468,7 @@ a.btn{ text-decoration:none; }
   // 以固定速度一路往下滑；滑到最後一格停一下，再平順回到開頭重新開始。
   // 使用者自己捲動、拖曳、點箭頭或放大照片時會暫停，停手幾秒後從目前位置繼續。
   var SECONDS_PER_FRAME = 9;          // 大約幾秒滑過一張照片的高度，數字越大越慢
-  var RESUME_AFTER_MS = 6000, END_PAUSE_MS = 3000;
+  var RESUME_AFTER_MS = 3000, END_PAUSE_MS = 3000;
   var autoPausedUntil = 0, autoPos = 0, autoLast = 0, endReachedAt = 0, returning = false;
   function pauseAuto(){ autoPausedUntil = Date.now() + RESUME_AFTER_MS; returning = false; endReachedAt = 0; }
   ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function(ev){
