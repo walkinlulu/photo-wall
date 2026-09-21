@@ -4245,8 +4245,7 @@ a.btn{ text-decoration:none; }
   var DATA_URL = 'data/latest.json';                      // Apps Script 寫入的資料檔
   var FORM_URL = 'https://forms.gle/hSdynPXmVLD7K5B29';   // 投稿表單
   var REFRESH_MS = 60 * 1000;                             // 每 60 秒檢查一次新投稿
-  var MIN_FRAMES = 9, TAIL = 2;                           // 膠卷最少格數、尾端保留的空格數
-  var LANE_SPEEDS = [64, 76, 58];                         // 三行彈幕各自的速度（像素／秒）
+    var LANE_SPEEDS = [64, 76, 58];                         // 三行彈幕各自的速度（像素／秒）
   // ==================
 
   var framesEl = document.getElementById('frames');
@@ -4316,7 +4315,7 @@ a.btn{ text-decoration:none; }
 
   // ---------- 膠卷 ----------
   function render(){
-    var total = Math.max(MIN_FRAMES, photos.length + TAIL);
+    var total = photos.length + 1;   // 照片之後只接一格空格，邀請投稿
     var out = [];
     for(var i = 0; i < total; i++){
       var p = photos[i];
@@ -4326,12 +4325,12 @@ a.btn{ text-decoration:none; }
             '<div class="win" role="button" tabindex="0" aria-label="放大第 ' + (i + 1) + ' 格">' +
               '<img src="' + esc(p.src) + '" alt="' + esc(p.caption || '林森北夜裡的一格照片') + '" loading="lazy">' +
             '</div>' +
-            '<div class="edge"><span class="n">' + pad(i + 1) + 'A</span><span>' + esc(p.date) + '</span></div>' +
+            '<div class="edge"><span class="n">' + pad(i + 1) + '</span><span>' + esc(p.date) + '</span></div>' +
           '</div>');
       } else {
         out.push(
           '<div class="frame empty" data-i="' + i + '">' +
-            '<div class="win" role="button" tabindex="0" aria-label="前往投稿表單"><span><span class="plus">＋</span>留下你的一格</span></div>' +
+            '<div class="win" role="button" tabindex="0" aria-label="前往投稿表單"><span><span class="plus">＋</span>留下你的《夜的林森北》</span></div>' +
             '<div class="edge"><span class="n">' + pad(i + 1) + '</span><span>EMPTY</span></div>' +
           '</div>');
       }
@@ -4379,7 +4378,7 @@ a.btn{ text-decoration:none; }
   function openFrame(i){
     var p = photos[i]; if(!p) return;
     lbImg.src = p.src; lbImg.alt = p.caption || '';
-    lbNo.textContent = 'FRAME ' + pad(i + 1) + 'A' + (p.date ? ' · ' + p.date : '');
+    lbNo.textContent = 'FRAME ' + pad(i + 1) + (p.date ? ' · ' + p.date : '');
     lb.classList.add('on'); document.getElementById('lbClose').focus();
   }
   function closeLb(){ lb.classList.remove('on'); lbImg.src = ''; }
