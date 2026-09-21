@@ -17,8 +17,8 @@
   --pink:#f06fb0;
   --amber:#f5d76e;
   --cream:#f6efdd;
-  --win-w:306px;
-  --win-h:204px;
+  --win-w:min(520px, calc(100vw - 110px));
+  --win-h:calc(var(--win-w) * 2 / 3);
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --ink:#f3f0e6; } }
 :root[data-theme="dark"]{ --ink:#f3f0e6; }
@@ -28,14 +28,14 @@ html,body{height:100%}
 body{
   margin:0; background:var(--night); color:var(--ink);
   font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
-  overflow:hidden;
+  overflow-x:hidden; overflow-y:auto;
 }
 .bg{position:fixed; inset:0; z-index:0; pointer-events:none}
 .bg svg{width:100%; height:100%; display:block}
 .scrim{position:fixed; inset:0; z-index:1; pointer-events:none;
   background:linear-gradient(180deg, rgba(8,14,60,.5) 0%, rgba(8,14,60,0) 22%, rgba(8,14,60,0) 72%, rgba(8,14,60,.5) 100%);
 }
-.layer{position:relative; z-index:2; display:flex; flex-direction:column; height:100dvh}
+.layer{position:relative; z-index:2; display:flex; flex-direction:column; min-height:100dvh}
 
 /* ---------- masthead ---------- */
 .masthead{padding:clamp(18px,2.6vw,32px) clamp(20px,4vw,52px) 0; max-width:min(640px,64vw); flex:0 0 auto}
@@ -49,7 +49,7 @@ body{
 .meta{margin-top:8px; font-family:"Space Mono",ui-monospace,monospace; font-size:11px; color:rgba(169,179,216,.7); letter-spacing:.12em}
 
 /* ---------- film column ---------- */
-.filmwrap{flex:1 1 auto; min-height:0; display:flex; justify-content:center; position:relative}
+.filmwrap{flex:0 0 auto; height:calc(var(--win-h) * 1.5 + 64px); margin-bottom:24px; display:flex; justify-content:center; position:relative}
 .beam{position:absolute; top:0; bottom:0; left:50%; width:var(--win-w); transform:translateX(-50%);
   background:linear-gradient(180deg, transparent, rgba(95,208,232,.1) 35%, rgba(240,111,176,.08) 70%, transparent);
   pointer-events:none}
@@ -57,7 +57,7 @@ body{
 .rail{
   overflow-y:auto; overflow-x:hidden; height:100%; cursor:grab;
   scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch;
-  scroll-snap-type:y proximity;
+  scroll-snap-type:y proximity; scroll-padding-top:16px;
 }
 .rail::-webkit-scrollbar{display:none}
 .rail:focus-visible{outline:2px solid var(--cyan); outline-offset:-6px}
@@ -75,7 +75,7 @@ body{
   padding:16px 14px; align-items:center;
   border-left:1px solid rgba(0,0,0,.5); border-right:1px solid rgba(0,0,0,.5);
 }
-.frame{width:var(--win-w); flex:0 0 auto; scroll-snap-align:center}
+.frame{width:var(--win-w); flex:0 0 auto; scroll-snap-align:start}
 .win{
   height:var(--win-h); background:#0b0e1c; position:relative; overflow:hidden;
   border:1px solid rgba(255,255,255,.08); display:grid; place-items:center;
@@ -163,7 +163,7 @@ body{
 .toast.on{opacity:1; transform:translateX(-50%) translateY(0)}
 
 @media (max-width:860px){
-  :root{--win-w:222px; --win-h:148px}
+  
   .masthead{max-width:none}
   .masthead h1{letter-spacing:.08em}
   .dock{max-width:none}
@@ -4319,9 +4319,9 @@ a.btn{ text-decoration:none; }
   function layout(){
     var f = framesEl.querySelector('.frame');
     var fh = f ? f.getBoundingClientRect().height : 230;
-    var pad = Math.max(12, Math.round(rail.clientHeight / 2 - fh / 2 - 16));
-    strip.style.paddingTop = pad + 'px';
-    strip.style.paddingBottom = pad + 'px';
+    // 上緣只留一點距離，讓第一格一開始就貼齊頂端；下緣留足空間，讓最後一格也能捲到頂端
+    strip.style.paddingTop = '0px';
+    strip.style.paddingBottom = Math.max(12, Math.round(rail.clientHeight - fh - 32)) + 'px';
   }
 
   function frameHeight(){
