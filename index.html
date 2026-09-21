@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>你紀錄下的《夜的林森北》</title>
+<title>十年一夜，林森北</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -175,19 +175,20 @@ body{
 }
 
 /* ---------- 彈幕橫帶（位於膠卷上方） ---------- */
-.danmaku{
-  flex:0 0 auto; position:relative; height:84px; margin:12px 0 4px; overflow:hidden;
-  background:linear-gradient(90deg, rgba(8,12,38,0) 0%, rgba(8,12,38,.62) 12%, rgba(8,12,38,.62) 88%, rgba(8,12,38,0) 100%);
-  border-top:1px solid rgba(95,208,232,.22); border-bottom:1px solid rgba(240,111,176,.22);
-}
+.danmaku{ flex:0 0 auto; position:relative; height:126px; margin:12px 0 4px; overflow:hidden; }
 .danmaku-item{
-  position:absolute; left:0; display:flex; align-items:center; white-space:pre;
-  font-size:14.5px; letter-spacing:.04em; color:var(--cream);
-  text-shadow:0 0 10px rgba(95,208,232,.55), 0 2px 10px rgba(4,7,26,.9);
-  will-change:transform;
+  position:absolute; left:0; display:flex; align-items:center; gap:2.4em; /* 約等於 10 個空格的間距 */
+  white-space:nowrap; will-change:transform;
 }
-.danmaku-item:nth-child(3n+2){ text-shadow:0 0 10px rgba(240,111,176,.55), 0 2px 10px rgba(4,7,26,.9); }
-.danmaku-item:nth-child(3n){ text-shadow:0 0 10px rgba(245,215,110,.5), 0 2px 10px rgba(4,7,26,.9); }
+.pill{
+  display:inline-block; padding:5px 16px; border-radius:999px;
+  font-size:14px; font-weight:500; letter-spacing:.04em; line-height:1.4;
+  color:#0b1030; border:1.5px solid #080c26;
+}
+.pill.cyan  { background:#9fe8f5; box-shadow:0 0 0 1px rgba(95,208,232,.5), 0 0 14px rgba(95,208,232,.75); }
+.pill.pink  { background:#f7a8d0; box-shadow:0 0 0 1px rgba(240,111,176,.5), 0 0 14px rgba(240,111,176,.75); }
+.pill.amber { background:#f8e39a; box-shadow:0 0 0 1px rgba(245,215,110,.5), 0 0 14px rgba(245,215,110,.7); }
+.pill.violet{ background:#cdb4f6; box-shadow:0 0 0 1px rgba(185,143,240,.5), 0 0 14px rgba(185,143,240,.75); }
 
 /* ---------- 投稿按鈕與品牌 ---------- */
 a.btn{ text-decoration:none; }
@@ -199,8 +200,8 @@ a.btn{ text-decoration:none; }
 .status{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:4;
   color:var(--ink-dim); font-size:13.5px; letter-spacing:.08em; text-align:center; pointer-events:none; }
 @media (max-width:860px){
-  .danmaku{ height:78px; margin:10px 0 4px; }
-  .danmaku-item{ font-size:13px; }
+  .danmaku{ height:108px; margin:10px 0 4px; }
+  .pill{ font-size:12.5px; padding:4px 13px; }
   .brand{ margin-left:0; }
 }
 @media (prefers-reduced-motion:reduce){ .danmaku{ display:none; } }
@@ -4174,7 +4175,7 @@ a.btn{ text-decoration:none; }
 
 <div class="layer" id="layer">
   <header class="masthead">
-    <h1>你紀錄下的《夜的林森北》</h1>
+    <h1>十年一夜，林森北</h1>
     <div class="rule"></div>
     <p>走過十年的經典路線，即將告一段落。這裡收藏著每一位參加者，在林森北的夜色裡留下的那一格。往下捲，就能看見別人的那一格。</p>
     <p class="meta">WALK IN TAIWAN · 35MM · ISO 800</p>
@@ -4374,7 +4375,7 @@ a.btn{ text-decoration:none; }
   lb.addEventListener('click', function(e){ if(e.target === lb) closeLb(); });
   document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && lb.classList.contains('on')) closeLb(); });
 
-  // ---------- 彈幕（三行，每行 2～3 句，句間 10 個空格） ----------
+  // ---------- 彈幕（三行，每行 2～3 句，每句一個圓角長框，句間約 10 個空格） ----------
   function buildLine(){
     var count = Math.min(pool.length, 2 + Math.floor(Math.random() * 2));
     var used = {}, picks = [];
@@ -4382,8 +4383,9 @@ a.btn{ text-decoration:none; }
       var idx = Math.floor(Math.random() * pool.length);
       if(!used[idx]){ used[idx] = true; picks.push(pool[idx]); }
     }
-    return picks.join(' '.repeat(10));
+    return picks;
   }
+  var PILL_COLORS = ['cyan', 'pink', 'amber', 'violet'];
   function stopDanmaku(){
     laneTimers.forEach(function(t){ clearTimeout(t); });
     laneTimers = [];
@@ -4394,7 +4396,12 @@ a.btn{ text-decoration:none; }
     var speed = LANE_SPEEDS[lane];
     var item = document.createElement('span');
     item.className = 'danmaku-item';
-    item.textContent = buildLine();
+    buildLine().forEach(function(text){
+      var pill = document.createElement('span');
+      pill.className = 'pill ' + PILL_COLORS[Math.floor(Math.random() * PILL_COLORS.length)];
+      pill.textContent = text;
+      item.appendChild(pill);
+    });
     item.style.top = (lane * 100 / 3) + '%';
     item.style.height = (100 / 3) + '%';
     band.appendChild(item);
