@@ -219,7 +219,7 @@ a.btn{ text-decoration:none; }
 /* 電腦版：標題改由背景招牌呈現，副標移到招牌右側 */
 html.sign-on .mh-title{ display:none }
 html.sign-on .masthead{ gap:24px }
-html.sign-on .masthead p{ max-width:320px }
+html.sign-on .intro{ max-width:520px }
 /* 上下箭頭：細線、無底色、半透明 */
 .nav{ width:44px; height:30px; border:none; border-radius:0; background:transparent; backdrop-filter:none;
   color:#fff3d8; opacity:.5; display:grid; place-items:center; padding:0; font-size:0; }
@@ -256,6 +256,16 @@ html.sign-on .masthead p{ max-width:320px }
   .btn.neon[aria-disabled="true"]{ position:relative; }
   .soon{ position:absolute; top:-8px; right:-6px; font-size:8.5px; padding:3px 6px; }
 }
+/* 副標：第一行是數字重點，第二段是說明 */
+.intro{ max-width:520px; }
+.intro p{ max-width:none; }
+.intro .nw{ white-space:nowrap; }                 /* 「138 場」這類詞組不從中間斷開 */
+.intro-lead{ color:var(--cream); font-size:clamp(14px,1.25vw,15.5px); font-weight:500; line-height:1.65; letter-spacing:.03em; margin-bottom:6px !important; }
+.intro-lead b{ color:#ffe24d; font-weight:700; font-size:1.12em; letter-spacing:.02em; }
+.intro-body{ font-size:clamp(12.5px,1.05vw,13.5px); line-height:1.8; }
+.intro-body .sent{ display:block; }              /* 每一句另起一行，句中只在逗號、分號後換行 */
+html.sign-on .mh-actions{ flex-direction:column; align-items:stretch; gap:10px; }   /* 電腦版按鈕上下排，讓副標有足夠寬度 */
+html.sign-on .mh-actions .btn{ justify-content:center; }
 </style>
 </head>
 <body>
@@ -4259,7 +4269,10 @@ html.sign-on .masthead p{ max-width:320px }
       <h1>十年一夜，林森北</h1>
       <div class="rule"></div>
     </div>
-    <p>走過十年的經典路線，即將告一段落。這裡收藏著每一位參加者，在林森北的夜色裡留下的那一張照片。往下捲，就能看見別人的那一夜。</p>
+    <div class="intro">
+      <p class="intro-lead"><span class="nw">十年、</span><span class="nw"><b>138</b> 場、</span><span class="nw"><b>138</b> 個夜晚、</span><span class="nw">近 <b>3,000</b> 位旅人的足跡，</span><br>如今即將告一段落。</p>
+      <p class="intro-body"><span class="sent"><span class="nw">這裡是一座屬於大家的記憶牆，</span><span class="nw">收藏著每一位旅人在林森北夜色裡留下的珍貴瞬間。</span></span><span class="sent"><span class="nw">往下捲動，</span><span class="nw">探索別人的條通記憶；</span><span class="nw">若你曾參與其中，</span><span class="nw">也歡迎留下你的那一夜，</span><span class="nw">與大家一起記錄這十年的總和。</span></span></p>
+    </div>
     <div class="mh-actions">
       <a class="btn" href="https://forms.gle/hSdynPXmVLD7K5B29" target="_blank" rel="noopener">留下你的林森北</a>
       <!-- 報名連結確定後：把 aria-disabled="true" 刪掉，加上 href="報名網址" target="_blank" rel="noopener"，並刪掉 <span class="soon">…</span> -->
