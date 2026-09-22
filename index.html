@@ -266,6 +266,16 @@ html.sign-on .intro{ max-width:520px }
 .intro-body .sent{ display:block; }              /* 每一句另起一行，句中只在逗號、分號後換行 */
 html.sign-on .mh-actions{ flex-direction:column; align-items:stretch; gap:10px; }   /* 電腦版按鈕上下排，讓副標有足夠寬度 */
 html.sign-on .mh-actions .btn{ justify-content:center; }
+/* 「留下你的林森北」主按鈕：霓虹燈管實心（粉到橘漸層） */
+.btn.cta{
+  background:linear-gradient(90deg,#ff5fd2,#ff7a5c); color:#0b1030; font-weight:700;
+  box-shadow:0 0 0 1px #ffd0ec, 0 0 20px rgba(255,95,210,.6);
+  transition:box-shadow .25s, filter .25s;
+}
+.btn.cta:hover{ filter:brightness(1.08); box-shadow:0 0 0 1px #ffe3f4, 0 0 30px rgba(255,95,210,.85); }
+.btn.cta:focus-visible{ outline:2px solid #ffe3f4; outline-offset:3px; }
+/* 兩顆按鈕貼齊頁首上緣，不往下擋到背景的 WALK IN TAIWAN 燈箱 */
+.mh-actions{ align-self:flex-start; }
 </style>
 </head>
 <body>
@@ -4228,7 +4238,7 @@ html.sign-on .mh-actions .btn{ justify-content:center; }
 </g>
 </g>
 <!-- ===== WALK IN TAIWAN 白色內透光燈箱 ===== -->
-<g transform="translate(985,236) rotate(2)">
+<g id="lightbox" transform="translate(985,236) rotate(2)">
   <defs>
     <filter id="boxGlow" x="-30%" y="-60%" width="160%" height="220%"><feGaussianBlur stdDeviation="10"/></filter>
     <linearGradient id="boxLit" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#f7f3ea"/><stop offset="1" stop-color="#e9e2d2"/></linearGradient>
@@ -4274,7 +4284,7 @@ html.sign-on .mh-actions .btn{ justify-content:center; }
       <p class="intro-body"><span class="sent"><span class="nw">這裡是一座屬於大家的記憶牆，</span><span class="nw">收藏著每一位旅人在林森北夜色裡留下的珍貴瞬間。</span></span><span class="sent"><span class="nw">往下捲動，</span><span class="nw">探索別人的條通記憶；</span><span class="nw">若你曾參與其中，</span><span class="nw">也歡迎留下你的那一夜，</span><span class="nw">與大家一起記錄這十年的總和。</span></span></p>
     </div>
     <div class="mh-actions">
-      <a class="btn" href="https://forms.gle/hSdynPXmVLD7K5B29" target="_blank" rel="noopener">留下你的林森北</a>
+      <a class="btn cta" href="https://forms.gle/hSdynPXmVLD7K5B29" target="_blank" rel="noopener">留下你的林森北</a>
       <!-- 報名連結確定後：把 aria-disabled="true" 刪掉，加上 href="報名網址" target="_blank" rel="noopener"，並刪掉 <span class="soon">…</span> -->
       <a class="btn neon" aria-disabled="true">參加 after party<span class="soon">COMING SOON</span></a>
     </div>
