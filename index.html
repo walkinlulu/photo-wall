@@ -244,6 +244,18 @@ html.sign-on .masthead p{ max-width:320px }
   86.5%{ opacity:.4; }
 }
 @media (prefers-reduced-motion:reduce){ .neon-tube, .neon-wall, .neon-flick2{ animation:none; } }
+/* after party 按鈕：尚未開放 */
+.btn.neon[aria-disabled="true"]{ cursor:default; display:inline-flex; align-items:center; gap:10px; }
+.btn.neon[aria-disabled="true"]:hover{ box-shadow:0 0 0 1px var(--pink), 0 0 16px rgba(240,111,176,.55), inset 0 0 10px rgba(240,111,176,.25); }
+.soon{
+  font-family:"Space Mono", ui-monospace, monospace; font-size:10px; font-weight:700; letter-spacing:.12em;
+  color:#0b1030; background:#ff5fd2; padding:3px 7px; border-radius:999px; line-height:1;
+}
+@media (max-width:860px){
+  /* 手機寬度不夠：標籤改成貼在按鈕右上角，不佔按鈕寬度 */
+  .btn.neon[aria-disabled="true"]{ position:relative; }
+  .soon{ position:absolute; top:-8px; right:-6px; font-size:8.5px; padding:3px 6px; }
+}
 </style>
 </head>
 <body>
@@ -4250,8 +4262,8 @@ html.sign-on .masthead p{ max-width:320px }
     <p>走過十年的經典路線，即將告一段落。這裡收藏著每一位參加者，在林森北的夜色裡留下的那一張照片。往下捲，就能看見別人的那一夜。</p>
     <div class="mh-actions">
       <a class="btn" href="https://forms.gle/hSdynPXmVLD7K5B29" target="_blank" rel="noopener">留下你的林森北</a>
-      <!-- 把 href="#" 換成 after party 的報名連結 -->
-      <a class="btn neon" href="#" target="_blank" rel="noopener">參加 after party</a>
+      <!-- 報名連結確定後：把 aria-disabled="true" 刪掉，加上 href="報名網址" target="_blank" rel="noopener"，並刪掉 <span class="soon">…</span> -->
+      <a class="btn neon" aria-disabled="true">參加 after party<span class="soon">COMING SOON</span></a>
     </div>
   </header>
 
@@ -4354,8 +4366,17 @@ html.sign-on .masthead p{ max-width:320px }
         }
         var nextPool = buildPool(entries), pSig = JSON.stringify(nextPool);
         if(pSig !== poolSig){
+          // 新留言優先插隊：第一次載入時，最新的幾則先播；之後有新投稿，新留言排到下一條馬上出現
+          var firstLoad = poolSig === '';
+          var fresh = firstLoad
+            ? nextPool.slice(0, FIRST_PRIORITY)
+            : nextPool.filter(function(t){ return pool.indexOf(t) === -1; });
+          priorityQueue = fresh.concat(priorityQueue.filter(function(t){
+            return nextPool.indexOf(t) !== -1 && fresh.indexOf(t) === -1;   // 已下架的留言不再排隊
+          }));
           pool = nextPool; poolSig = pSig;
-          (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(startDanmaku);
+          // 彈幕已經在跑就不重來，正在飄的彈幕不會被清掉
+          if(!running) (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(startDanmaku);
         }
         statusEl.style.display = 'none';
       })
@@ -4460,13 +4481,21 @@ html.sign-on .masthead p{ max-width:320px }
   var PILL_COLORS = ['c1', 'c2', 'c3'], colorIdx = 0;   // 三色依序輪流
   var LANE_START_DELAY = [0, 1.4];        // 兩行錯開起跑（秒）
   var lanes = [[], []], laneWait = [0, 0], running = false, lastT = 0;
+  var priorityQueue = [];                 // 優先播放的新留言
+  var FIRST_PRIORITY = 6;                 // 打開網頁時，最新的幾則先播
 
   function buildLine(){
     var count = Math.min(pool.length, 2 + Math.floor(Math.random() * 2));
-    var used = {}, picks = [];
+    var picks = [];
+    // 先放排隊中的新留言（最新的在前）
+    while(picks.length < count && priorityQueue.length){
+      var t = priorityQueue.shift();
+      if(picks.indexOf(t) === -1) picks.push(t);
+    }
+    // 其餘隨機補滿
     while(picks.length < count){
-      var idx = Math.floor(Math.random() * pool.length);
-      if(!used[idx]){ used[idx] = true; picks.push(pool[idx]); }
+      var r = pool[Math.floor(Math.random() * pool.length)];
+      if(picks.indexOf(r) === -1) picks.push(r);
     }
     return picks;
   }
