@@ -95,7 +95,10 @@
     "images": [
       "images/1-smId-T9r-x2FRxrzU2Sn0fB3EP-K9yg.jpg"
     ],
-    "submittedAt": "2026-09-16T03:52:31.405Z"
+    "submittedAt": "2026-09-16T03:52:31.405Z",
+    "photoDates": [
+      "2022-02-24"
+    ]
   },
   {
     "id": "1PWI4_sTCieqFQtgFtrwpxcRu_0MJqjea",
@@ -104,6 +107,9 @@
       "images/1PWI4_sTCieqFQtgFtrwpxcRu_0MJqjea.jpg"
     ],
     "submittedAt": "2026-09-15T07:50:56.247Z",
-    "danmakuTexts": []
+    "danmakuTexts": [],
+    "photoDates": [
+      "2020-03-28"
+    ]
   }
 ]
