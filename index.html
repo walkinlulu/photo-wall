@@ -4356,8 +4356,10 @@ html.sign-on .mh-actions .btn{ justify-content:center; }
   function flatten(entries){
     var out = [];
     (Array.isArray(entries) ? entries : []).forEach(function(e){
-      (Array.isArray(e.images) ? e.images : []).forEach(function(src){
-        out.push({ src: src, caption: e.caption || '', date: fmtDate(e.submittedAt) });
+      var taken = Array.isArray(e.photoDates) ? e.photoDates : [];
+      (Array.isArray(e.images) ? e.images : []).forEach(function(src, i){
+        // 優先顯示拍攝日期；沒有 EXIF 資訊的照片改用投稿日期
+        out.push({ src: src, caption: e.caption || '', date: taken[i] ? fmtDate(taken[i]) : fmtDate(e.submittedAt) });
       });
     });
     return out;
